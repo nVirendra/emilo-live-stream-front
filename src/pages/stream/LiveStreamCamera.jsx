@@ -4,10 +4,9 @@ import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import io from 'socket.io-client';
 import axios from 'axios';
-import {API_BASE_URL} from './utils/constants';
-import MainLayout from './layouts/MainLayout';
+import MainLayout from '../../layouts/MainLayout';
 
-const socket = io(`${API_BASE_URL}`);
+const socket = io('http://localhost:5000');
 
 const LiveStreamCamera = () => {
   const webcamRef = useRef(null);
@@ -20,7 +19,7 @@ const LiveStreamCamera = () => {
   React.useEffect(() => {
     const fetchFirstStream = async () => {
       try {;
-        const response = await axios.get(`${API_BASE_URL}/api/streams/live`);
+        const response = await axios.get('http://localhost:5000/api/streams/live');
         if (response.data && response.data.length > 0) {
           const firstLiveStream = response.data[0];
           setStreamKey(firstLiveStream.streamKey);
@@ -40,7 +39,7 @@ const LiveStreamCamera = () => {
     try {
       setLoading(true);
 
-      const res = await axios.post(`${API_BASE_URL}/api/streams/create`, {
+      const res = await axios.post('http://localhost:5000/api/streams/create', {
         title: 'Test Stream',
         description: 'Live stream from browser',
         isLive: true,

@@ -1,8 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Hls from 'hls.js';
-import {API_BASE_URL} from './utils/constants';
-import MainLayout from './layouts/MainLayout';
+import MainLayout from '../../layouts/MainLayout';
 
 const WatchStream = () => {
   const videoRef = useRef();
@@ -15,14 +14,15 @@ const WatchStream = () => {
 
     if (Hls.isSupported()) {
       const hls = new Hls();
-      hls.loadSource(`${API_BASE_URL}/hls/${streamKey}/index.m3u8`);
+      hls.loadSource(`http://localhost:5000/live/${streamKey}/index.m3u8`);
+      
       hls.attachMedia(video);
 
       return () => {
         hls.destroy(); // Cleanup
       };
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = `${API_BASE_URL}/hls/${streamKey}/index.m3u8`;
+      video.src = `http://localhost:5000/live/${streamKey}/index.m3u8`;
     }
   }, [streamKey]);
 

@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import {API_BASE_URL} from './utils/constants';
-import MainLayout from './layouts/MainLayout';
-
-const StreamList = () => {
+import MainLayout from '../../layouts/MainLayout';
+const LiveStreams = () => {
   const [streams, setStreams] = useState([]);
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/api/streams/live`).then((res) => {
+    axios.get('http://localhost:5000/api/streams/live').then((res) => {
       setStreams(res.data);
     });
   }, []);
-  console.log(streams);
+  console.log('kya h',streams);
   return (
     <MainLayout>
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -49,4 +47,4 @@ const StreamList = () => {
   );
 };
 
-export default StreamList;
+export default LiveStreams;

@@ -1,20 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import LiveStreamCamera from './LiveStreamCamera';
-import StreamList from './StreamList';
-import WatchStream from './[streamKey]';
+
+import { ToastContainer } from 'react-toastify';
+import { AuthProvider } from './context/AuthContext';
+import AppRouter from './routes/AppRouter';
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<StreamList />} />
-          <Route path="/create" element={<LiveStreamCamera />} />
-          <Route path="/watch/:streamKey" element={<WatchStream />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <AuthProvider>
+        <AppRouter/>
+        <ToastContainer position="top-right" autoClose={3000} />
+    </AuthProvider>
   );
 }
 
