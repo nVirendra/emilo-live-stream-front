@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import MainLayout from '../../layouts/MainLayout';
+import { API_BASE_URL } from '../../utils/constants';
 const LiveStreams = () => {
   const [streams, setStreams] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/streams/live').then((res) => {
+    axios.get(`${API_BASE_URL}/streams/live`).then((res) => {
       setStreams(res.data);
     });
   }, []);

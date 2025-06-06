@@ -14,7 +14,7 @@ const WatchStream = () => {
 
     if (Hls.isSupported()) {
       const hls = new Hls();
-      hls.loadSource(`http://localhost:5000/live/${streamKey}/index.m3u8`);
+      hls.loadSource(`${API_BASE_URL}/live/${streamKey}/index.m3u8`);
       
       hls.attachMedia(video);
 
@@ -22,7 +22,7 @@ const WatchStream = () => {
         hls.destroy(); // Cleanup
       };
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = `http://localhost:5000/live/${streamKey}/index.m3u8`;
+      video.src = `${API_BASE_URL}/live/${streamKey}/index.m3u8`;
     }
   }, [streamKey]);
 

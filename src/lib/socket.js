@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import useAuth from '../hooks/useAuth';
+import { API_BASE_URL } from '../utils/constants';
 export const useSocket = () => {
   const { user } = useAuth();
   const socketRef = useRef(null);
@@ -10,7 +11,7 @@ export const useSocket = () => {
   useEffect(() => {
     if (user?.id && !socketRef.current) {
       console.log('🔌 Connecting socket for', user.id);
-      const socketInstance = io('http://localhost:5000', {
+      const socketInstance = io(`${API_BASE_URL}`, {
         query: { userId: user.id },
         transports: ['websocket'],
         withCredentials: true,
