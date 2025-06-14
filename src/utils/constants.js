@@ -1,2 +1,2 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://eml-live-stream-back.onrender.com';
-export const API_URL = import.meta.env.VITE_API_URL || 'https://eml-live-stream-back.onrender.com/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://emilo-live-stream-back.onrender.com/';
+export const API_URL = import.meta.env.VITE_API_URL || 'https://emilo-live-stream-back.onrender.com//api';
