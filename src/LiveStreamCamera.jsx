@@ -1,5 +1,3 @@
-// LiveStreamCamera.jsx (Frontend) - Ensure MediaRecorder sends proper format
-
 import React, { useRef, useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import io from 'socket.io-client';
@@ -7,7 +5,10 @@ import axios from 'axios';
 import {API_BASE_URL} from './utils/constants';
 import MainLayout from './layouts/MainLayout';
 
-const socket = io(`${API_BASE_URL}`);
+// const socket = io(`${API_BASE_URL}`);
+const socket = io(`${API_BASE_URL}`, {
+  transports: ['websocket'],
+});
 
 const LiveStreamCamera = () => {
   const webcamRef = useRef(null);
@@ -55,7 +56,8 @@ const LiveStreamCamera = () => {
       streamRef.current = stream;
 
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp8,opus',
+        // mimeType: 'video/webm;codecs=vp8,opus',
+        mimeType: 'video/webm;codecs=vp9,opus',
       });
 
       mediaRecorderRef.current = mediaRecorder;
@@ -72,7 +74,8 @@ const LiveStreamCamera = () => {
         }
       };
 
-      mediaRecorder.start(1000); // chunk every second
+      // mediaRecorder.start(1000); 
+      mediaRecorder.start(500); 
       setIsStreaming(true);
     } catch (err) {
       console.error('Stream creation error:', err);
