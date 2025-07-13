@@ -21,6 +21,8 @@ const CreatePost = ({ onPostCreated }) => {
   };
 
   const handlePost = async () => {
+    console.log("FormData content:", content, mediaFile);
+
     if (!content && !mediaFile) {
       toast.error('Please write something or add media.');
       return;
@@ -99,7 +101,7 @@ const CreatePost = ({ onPostCreated }) => {
             ref={fileInputRef}
             type="file"
             accept="image/*,video/*"
-            hidden
+            
             onChange={handleMediaChange}
           />
 
