@@ -3,7 +3,25 @@ import { baseApi } from './api';
 export const postApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getPosts: builder.query({
-      query: () => 'posts/feed',
+      // accepts { page, limit }
+      query: ({ page = 1, limit = 2 }) =>
+        `posts/feed?page=${page}&limit=${limit}`,
+
+      // ─── Keep ONE cache entry for *all* pages ──────────────
+      serializeQueryArgs: ({ endpointName }) => endpointName,
+
+      // ─── Merge new page into existing cache ────────────────
+      merge: (currentCache, newPosts) => {
+        newPosts.forEach((p) => {
+         if (!currentCache.some((c) => c._id === p._id)) {
+           currentCache.push(p);
+         }
+       });
+      },
+
+      // ─── Refetch only when page number changes ─────────────
+      forceRefetch: ({ currentArg, previousArg }) =>
+        currentArg?.page !== previousArg?.page,
 
       // Always return an array from the response
       transformResponse: (response) => {
