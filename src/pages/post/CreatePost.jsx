@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { FiCamera, FiMapPin, FiLock, FiGlobe } from 'react-icons/fi';
-import { createPost } from '../../services/post.service';
+import { FaSpinner } from 'react-icons/fa';
+
 import { useAddPostMutation } from '../../features/api/post.api';
 import { toast } from 'react-toastify';
 
@@ -49,7 +50,8 @@ const CreatePost = () => {
       toast.success('Post created successfully!');
     } catch (error) {
       console.error('Post creation failed:', error);
-      toast.error('Something went wrong!');
+      const msg = error?.data?.message || 'Something went wrong';
+      toast.error(msg);
     }
   };
 
@@ -136,7 +138,15 @@ const CreatePost = () => {
               isLoading ? 'opacity-70 cursor-not-allowed' : ''
             } bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 text-white text-sm font-medium px-6 py-2 rounded-lg shadow hover:brightness-110 transition-all`}
           >
-            {isLoading ? 'Posting...' : 'Post'}
+             {isLoading ? (
+  <>
+    <FaSpinner className="animate-spin" />
+    <span>Posting...</span>
+  </>
+) : (
+  'Post'
+)}
+
           </button>
         </div>
       </div>

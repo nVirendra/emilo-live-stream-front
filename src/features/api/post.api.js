@@ -5,12 +5,12 @@ export const postApi = baseApi.injectEndpoints({
     getPosts: builder.query({
       query: () => 'posts/feed',
 
-      // 👇 Normalize response to always be an array
+      // Always return an array from the response
       transformResponse: (response) => {
-        if (Array.isArray(response)) return response;               // already an array
+        if (Array.isArray(response)) return response;
         if (Array.isArray(response?.result)) return response.result;
         if (Array.isArray(response?.posts)) return response.posts;
-        return [];                                                  // fallback
+        return [];
       },
 
       providesTags: (posts = []) =>
@@ -28,7 +28,21 @@ export const postApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: [{ type: 'Post', id: 'LIST' }],
+
+      // Optimistically update the post list cache
+      async onQueryStarted(postData, { dispatch, queryFulfilled }) {
+        try {
+          const { data: newPost } = await queryFulfilled;
+
+          dispatch(
+            postApi.util.updateQueryData('getPosts', undefined, (draft) => {
+              draft.unshift(newPost); // insert new post at top
+            })
+          );
+        } catch (err) {
+          console.error('Failed to update post cache:', err);
+        }
+      },
     }),
   }),
 });
