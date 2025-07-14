@@ -1,16 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { FiCamera, FiMapPin, FiLock, FiGlobe } from 'react-icons/fi';
 import { createPost } from '../../services/post.service';
-import { useAddPostMutation } from '../../features/api/post.api';
 import { toast } from 'react-toastify';
 
-const CreatePost = () => {
+const CreatePost = ({ onPostCreated }) => {
   const [content, setContent] = useState('');
   const [mediaFile, setMediaFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [addPost, { isLoading }] = useAddPostMutation();
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -38,8 +36,11 @@ const CreatePost = () => {
     }
 
     try {
-      
-     await addPost(formData).unwrap(); 
+      setIsLoading(true);
+      const { data: newPost } = await createPost(formData);
+
+      // Notify Feed
+      onPostCreated(newPost);
 
       // Reset form
       setContent('');
@@ -50,6 +51,8 @@ const CreatePost = () => {
     } catch (error) {
       console.error('Post creation failed:', error);
       toast.error('Something went wrong!');
+    } finally {
+      setIsLoading(false);
     }
   };
 

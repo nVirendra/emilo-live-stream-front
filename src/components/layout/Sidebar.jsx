@@ -1,8 +1,8 @@
 import React from 'react';
-import useAuth from '../../hooks/useAuth'; // Adjust the import path as necessary
+import { useSelector } from 'react-redux';
 
 const LeftSidebar = () => {
-  const { user } = useAuth();
+  const  user  = useSelector((state)=>state.auth.user)
   const followerCount = user?.followers?.length || 0;
   const followingCount = user?.following?.length || 0;
 
