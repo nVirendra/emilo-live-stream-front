@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { FiHeart, FiMessageSquare, FiLock, FiGlobe } from 'react-icons/fi';
 import { commentPost } from '../../services/post.service';
-import useAuth from '../../hooks/useAuth';
+import { useSelector } from 'react-redux';
 
 const PostCard = ({ post, toggleLike }) => {
-  const { user } = useAuth();
+  const user = useSelector((state)=>state.auth.user);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [localComments, setLocalComments] = useState(post.comments);

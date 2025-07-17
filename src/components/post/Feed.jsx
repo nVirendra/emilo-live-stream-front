@@ -1,101 +1,81 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useSelector } from 'react-redux';
+import { useGetPostsQuery } from '../../features/api/post.api';
 import PostCard from '../post/PostCard';
 import CreatePost from '../../pages/post/CreatePost';
-import { fetchFeed, likePost } from '../../services/post.service';
-import useAuth from '../../hooks/useAuth';
-import { sendNotification } from '../../lib/triggerNotification';
+
+const LIMIT = 2;
+
 const Feed = () => {
-  const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
+  const user = useSelector((state) => state.auth.user);
+  const [page, setPage] = useState(1);
+  const loaderRef = useRef();
+
+  const {
+    data: rawPosts = [],
+    isFetching,
+    isError,
+    error,
+  } = useGetPostsQuery({ page, limit: LIMIT });
+
+  // Infinite Scroll Handler
+  const handleObserver = useCallback(
+    (entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && !isFetching) {
+        setPage((prev) => prev + 1);
+      }
+    },
+    [isFetching]
+  );
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const { data } = await fetchFeed();
+    const option = { root: null, rootMargin: '20px', threshold: 1.0 };
+    const observer = new IntersectionObserver(handleObserver, option);
+    const currentLoader = loaderRef.current;
 
-        const normalizedPosts = data.result.map((post) => ({
-          id: post._id,
-          user: post.userId?.name || 'Unknown User',
-          userId: post.userId?._id || '',
-          content: post.content,
-          image: post.mediaType === 'image' ? post.mediaUrl : '',
-          video: post.mediaType === 'video' ? post.mediaUrl : '',
-          likes: post.likes.length,
-          liked: post.likes.includes(user?.id),
-          comments: post.comments.map((c) => ({
-            name: c.userId?.name || 'User',
-            comment: c.comment,
-          })),
-          privacy: post.privacy,
-          createdAt: post.createdAt,
-        }));
-
-        setPosts(normalizedPosts);
-      } catch (error) {
-        console.error('Fetch Feed failed:', error);
-      }
+    if (currentLoader) observer.observe(currentLoader);
+    return () => {
+      if (currentLoader) observer.unobserve(currentLoader);
     };
+  }, [handleObserver]);
 
-    fetchPosts();
-  }, []);
+  // Transform posts for display
+  const posts = useMemo(
+    () =>
+      rawPosts.map((post) => ({
+        id: post._id,
+        user: post.userId?.name ?? 'Unknown User',
+        userId: post.userId?._id ?? '',
+        content: post.content,
+        image: post.mediaType === 'image' ? post.mediaUrl : '',
+        video: post.mediaType === 'video' ? post.mediaUrl : '',
+        likes: post.likes.length,
+        liked: post.likes.includes(user?._id),
+        comments: post.comments.map((c) => ({
+          name: c.userId?.name ?? 'User',
+          comment: c.comment,
+        })),
+        privacy: post.privacy,
+        createdAt: post.createdAt,
+      })),
+    [rawPosts, user?._id]
+  );
 
-  const handlePostCreated = (newPostRaw) => {
-    const newPost = {
-      id: newPostRaw._id,
-      user: newPostRaw.userId?.name || 'Unknown User',
-      userId: newPostRaw.userId?._id || '',
-      content: newPostRaw.content,
-      image: newPostRaw.mediaType === 'image' ? newPostRaw.mediaUrl : '',
-      video: newPostRaw.mediaType === 'video' ? newPostRaw.mediaUrl : '',
-      likes: newPostRaw.likes?.length || 0,
-      liked: newPostRaw.likes?.includes(user?.id) || false,
-      comments: [],
-      privacy: newPostRaw.privacy,
-      createdAt: newPostRaw.createdAt,
-    };
-
-    setPosts((prev) => [newPost, ...prev]);
-  };
-
-  const toggleLike = async (id) => {
-    const currentUser = user;
-    let receiverId;
-
-    try {
-      setPosts((prev) =>
-        prev.map((post) => {
-          if (post.id === id) {
-            if (!post.liked) receiverId = post.userId;
-            return {
-              ...post,
-              liked: !post.liked,
-              likes: post.liked ? post.likes - 1 : post.likes + 1,
-            };
-          }
-          return post;
-        })
-      );
-
-      await likePost(id);
-
-      if (receiverId && currentUser?.id && currentUser.id !== receiverId) {
-        await sendNotification({
-          senderId: currentUser.id,
-          receiverId,
-          postId: id,
-        });
-      }
-    } catch (error) {
-      console.error('Error liking post:', error);
-    }
-  };
+  if (isError) {
+    return <p className="text-red-500 text-center">{error?.data?.message || 'Failed to load feed'}</p>;
+  }
 
   return (
     <section className="space-y-6">
-      <CreatePost onPostCreated={handlePostCreated} />
+      <CreatePost />
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} toggleLike={toggleLike} />
+        <PostCard key={post.id} post={post} />
       ))}
+      {/* Infinite scroll loader div */}
+      <div ref={loaderRef} className="h-10 flex items-center justify-center">
+        {isFetching && <div className="loader" />}
+      </div>
     </section>
   );
 };

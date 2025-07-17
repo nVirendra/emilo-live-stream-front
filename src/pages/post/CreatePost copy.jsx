@@ -1,17 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { FiCamera, FiMapPin, FiLock, FiGlobe } from 'react-icons/fi';
-import { FaSpinner } from 'react-icons/fa';
-
-import { useAddPostMutation } from '../../features/api/post.api';
+import { createPost } from '../../services/post.service';
 import { toast } from 'react-toastify';
 
-const CreatePost = () => {
+const CreatePost = ({ onPostCreated }) => {
   const [content, setContent] = useState('');
   const [mediaFile, setMediaFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [addPost, { isLoading }] = useAddPostMutation();
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -39,8 +36,11 @@ const CreatePost = () => {
     }
 
     try {
-      
-     await addPost(formData).unwrap(); 
+      setIsLoading(true);
+      const { data: newPost } = await createPost(formData);
+
+      // Notify Feed
+      onPostCreated(newPost);
 
       // Reset form
       setContent('');
@@ -50,8 +50,9 @@ const CreatePost = () => {
       toast.success('Post created successfully!');
     } catch (error) {
       console.error('Post creation failed:', error);
-      const msg = error?.data?.message || 'Something went wrong';
-      toast.error(msg);
+      toast.error('Something went wrong!');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,15 +139,7 @@ const CreatePost = () => {
               isLoading ? 'opacity-70 cursor-not-allowed' : ''
             } bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 text-white text-sm font-medium px-6 py-2 rounded-lg shadow hover:brightness-110 transition-all`}
           >
-             {isLoading ? (
-  <>
-    <FaSpinner className="animate-spin" />
-    <span>Posting...</span>
-  </>
-) : (
-  'Post'
-)}
-
+            {isLoading ? 'Posting...' : 'Post'}
           </button>
         </div>
       </div>

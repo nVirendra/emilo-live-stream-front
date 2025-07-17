@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from '../../services/auth.service';
+import useAuth from '../../hooks/useAuth';
 import { loginSchema } from '../../schemas/auth.schema';
 import { toast } from 'react-toastify';
 import AuthLayout from '../../layouts/AuthLayout';
-import { useLoginMutation } from '../../features/api/auth.api';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [authApi, { isLoading }] = useLoginMutation();
-
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,13 +22,16 @@ const Login = () => {
       result.error.errors.forEach((err) => toast.error(err.message));
       return;
     }
-  
+    setLoading(true);
     try {
-      await authApi({ email, password }).unwrap();
+      const { data } = await loginUser({ email, password });
+      login(data.user, data.token);
       toast.success('Login successful!');
       navigate('/');
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,10 +60,10 @@ const Login = () => {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={loading}
           className="w-full py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition duration-300"
         >
-          {isLoading ? 'Signing In...' : 'Sign In'}
+          {loading ? 'Signing In...' : 'Sign In'}
         </button>
       </form>
 
