@@ -42,25 +42,31 @@ const Feed = () => {
 
   // Transform posts for display
   const posts = useMemo(
-    () =>
-      rawPosts.map((post) => ({
+  () =>
+    rawPosts.map((post) => {
+      const likes = post.likes || [];
+      const comments = post.comments || [];
+
+      return {
         id: post._id,
         user: post.userId?.name ?? 'Unknown User',
         userId: post.userId?._id ?? '',
         content: post.content,
         image: post.mediaType === 'image' ? post.mediaUrl : '',
         video: post.mediaType === 'video' ? post.mediaUrl : '',
-        likes: post.likes.length,
-        liked: post.likes.includes(user?._id),
-        comments: post.comments.map((c) => ({
+        likes: likes.length,
+        liked: likes.includes(user?._id),
+        comments: comments.map((c) => ({
           name: c.userId?.name ?? 'User',
           comment: c.comment,
         })),
         privacy: post.privacy,
         createdAt: post.createdAt,
-      })),
-    [rawPosts, user?._id]
-  );
+      };
+    }),
+  [rawPosts, user?._id]
+);
+
 
   if (isError) {
     return <p className="text-red-500 text-center">{error?.data?.message || 'Failed to load feed'}</p>;
